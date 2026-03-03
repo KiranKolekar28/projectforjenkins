@@ -3,7 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
-    image: kirankolekar/insect:latest
+    image: kaizokukira/insect:latest
     ports:
       - "3000:80"
     container_name: my-website
