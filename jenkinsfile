@@ -1,47 +1,98 @@
+
+// Old Way
+
+// pipeline{
+//     agent any
+    
+//     stages{
+//         stage("git clone"){
+//             steps{
+//                 echo "We are going to clone "
+//                 git url: "https://github.com/KiranKolekar28/projectforjenkins.git", branch: "master"
+//             }
+//         }
+        
+//         stage("Image build"){
+//             steps{
+//                 echo "We will create image from Dockerfile"
+//                 sh "docker build -t insect:latest . "
+//             }
+//         }
+        
+//         stage("Pushing image to the Dockerhub"){
+//             steps{
+//                 echo " lets push image to the docker hub"
+//                 withCredentials([usernamePassword('credentialsId':"DockerHubCred" ,
+//                 passwordVariable:"dockerHubPass" , 
+//                 usernameVariable:"dockerHubUser")]){
+//                 sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass} "
+//                 sh "docker tag insect:latest ${env.dockerHubUser}/insect:latest "
+//                 sh "docker push ${env.dockerHubUser}/insect:latest"
+//                 }
+//             }
+//         }
+        
+        
+//         stage("deploy"){
+//             steps{
+//                 echo "We will deploye image now"
+                
+//                 sh "docker-compose up -d"
+//             }
+//         }
+        
+        
+        
+        
+//     }
+    
+    
+// }
+
+
+// New Way 
+
+@Library("shared") _
+
 pipeline{
     agent any
     
     stages{
+
         stage("git clone"){
             steps{
                 echo "We are going to clone "
-                git url: "https://github.com/KiranKolekar28/projectforjenkins.git", branch: "master"
+                script{
+                     clone( "https://github.com/KiranKolekar28/projectforjenkins.git","master" )
+                }
+                
             }
         }
         
         stage("Image build"){
             steps{
-                echo "We will create image from Dockerfile"
-                sh "docker build -t insect:latest . "
+                script{
+                    
+                      dockers_build("insects" , "latest")
+                }              
             }
         }
         
         stage("Pushing image to the Dockerhub"){
             steps{
-                echo " lets push image to the docker hub"
-                withCredentials([usernamePassword('credentialsId':"DockerHubCred" ,
-                passwordVariable:"dockerHubPass" , 
-                usernameVariable:"dockerHubUser")]){
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass} "
-                sh "docker tag insect:latest ${env.dockerHubUser}/insect:latest "
-                sh "docker push ${env.dockerHubUser}/insect:latest"
+                script{
+                    docker_push("insect" , "latest")
                 }
             }
         }
         
-        
         stage("deploy"){
             steps{
-                echo "We will deploye image now"
+                script{
+                    Docker_deploy()
+                }
                 
-                sh "docker-compose up -d"
             }
-        }
-        
-        
-        
-        
+        }   
     }
-    
-    
 }
